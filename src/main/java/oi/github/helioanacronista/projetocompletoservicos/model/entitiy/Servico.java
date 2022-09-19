@@ -1,12 +1,16 @@
 package oi.github.helioanacronista.projetocompletoservicos.model.entitiy;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Servico {
 
     @Id
