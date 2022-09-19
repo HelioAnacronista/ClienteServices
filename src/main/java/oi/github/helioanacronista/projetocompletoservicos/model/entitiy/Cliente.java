@@ -1,9 +1,14 @@
 package oi.github.helioanacronista.projetocompletoservicos.model.entitiy;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
+@Data
 public class Cliente {
 
     @Id
@@ -16,6 +21,6 @@ public class Cliente {
     @Column(name = "cpf", nullable = false, length = 11)
     private String cpf;
 
-    @Column
+    @Column(name = "data_cadastro")
     private LocalDate dataCadastro;
 }
