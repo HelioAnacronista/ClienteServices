@@ -6,9 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -16,50 +18,49 @@ import java.util.List;
 public class ClienteController {
 
     @Autowired
-    private ClientesRepository repositoryCliente;
+    private ClientesRepository repository;
+
+    @GetMapping
+    public List<Cliente> obterTodos(){
+        return repository.findAll();
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Cliente save(@RequestBody Cliente cliente) {
-        return repositoryCliente.save(cliente);
+    public Cliente salvar( @RequestBody @Valid Cliente cliente ){
+        return repository.save(cliente);
     }
 
     @GetMapping("{id}")
-    public Cliente findById(@PathVariable Integer id) {
-        return repositoryCliente
+    public Cliente acharPorId( @PathVariable Integer id ){
+        return repository
                 .findById(id)
-                .orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado") );
     }
 
     @DeleteMapping("{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Integer id) {
-        repositoryCliente.findById(id)
+    public void deletar( @PathVariable Integer id ){
+        repository
+                .findById(id)
                 .map( cliente -> {
-                   repositoryCliente.delete(cliente);
-                   return cliente;
-                } )
-                .orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
+                    repository.delete(cliente);
+                    return Void.TYPE;
+                })
+                .orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado") );
     }
 
     @PutMapping("{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void update (@PathVariable Integer id, @RequestBody Cliente cliente) {
-        repositoryCliente.findById(id)
-                .map( clienteExistente -> {
-                    cliente.setId(clienteExistente.getId());
-                    repositoryCliente.save(cliente);
-                    return clienteExistente;
-                }).orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
-    }
-
-    @GetMapping
-    public List<Cliente> find (Cliente filtro) {
-        ExampleMatcher matcher = ExampleMatcher
-                .matching()
-                .withIgnoreCase()
-                .withStringMatcher( ExampleMatcher.StringMatcher.CONTAINING );
-        Example example = Example.of(filtro, matcher);
-        return repositoryCliente.findAll(example);
+    public void atualizar( @PathVariable Integer id,
+                           @RequestBody @Valid Cliente clienteAtualizado ) {
+        repository
+                .findById(id)
+                .map( cliente -> {
+                    cliente.setNome(clienteAtualizado.getNome());
+                    cliente.setCpf(clienteAtualizado.getCpf());
+                    return repository.save(cliente);
+                })
+                .orElseThrow( () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado") );
     }
 }
